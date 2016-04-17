@@ -106,17 +106,80 @@ def altInducerAmps(speed):
 		if inducerLow == '':
 			inducerLow = senscom.inducer()
 			s = inducerLow
-		
+	else:
+		if inducerHi == '':	
+			inducerHi = senscom.inducer()
+			s = inducerHi
+	
+	if (s * .9) <= senscom.inducer() <= (s * 1.1):
+		# log data
+		return True
+	else:
+		return False
 
 # check the flame sensor
-
+def flameCheck():
+	if senscom.flame() == 'True':
+		# log data
+		return True
+	else:
+		return False
+		
 # check the temp rise
-
+def tempRiseGas(stage):
+	if stage == 'low':
+		if 20 <= senscom.temp_rise() <= 35:
+			#log data
+			return True
+		else:
+			return False
+	else:
+		if 30 <= senscom.temp_rise() <= 70:
+			#log data
+			return True
+		else:
+			return False
+		
 # check the temp drop
+def tempDrop(stage):
+	if stage == 'low':
+		if 15 <= senscom.temp_drop() <= 20:
+			#log data
+			return True
+		else:
+			return False
+	else:
+		if 18 <= senscom.temp_drop() <= 26:
+			#log data
+			return True
+		else:
+			return False
 
 # check capacity
-
-
+def capacityCheck(tonage, cfm):
+	btu = ''
+	if tonage == 1.5:
+		btu = 18000
+	elif tonage == 2:
+		btu = 24000
+	elif tonage == 2.5:
+		btu = 30000
+	elif tonage == 3:
+		btu = 36000
+	elif tonage == 3.5:
+		btu = 42000
+	elif tonage == 4:
+		btu = 48000
+	elif tonage == 5:
+		btu = 60000
+	else:
+		pass
+	
+	if (btu * .9) <= senscom.capacity(cfm) <= (btu * 1.1):
+		#log data
+		return True
+	else:
+		return False
 
 def main():
 	
