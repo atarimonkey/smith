@@ -24,9 +24,11 @@
 
 import senscom, time,
 
-blowerLow = ''
-blowerMed = ''
-blowerHi = ''
+blowerHeatLow = ''
+blowerHeatHi = ''
+blowerCoolLow = ''
+blowerCoolHi = ''
+blowerFan = ''
 
 inducerLow = ''
 inducerHi = ''
@@ -59,25 +61,39 @@ def blowerAmps(speed):
 			return False
 
 # alt blower check
-def altBlowerAmps(speed):
-	if speed == 'low':
-		if blowerLow == '':
-			blowerLow = senscom.blower()
-			s = blowerLow
+def altBlowerAmps(call, speed):
+	if call == 'w':
+		if speed == 'low':
+			if blowerHeatLow == '':
+				blowerHeatLow = senscom.blower()
+				s = blowerHeatLow
+			else:
+				s = blowerHeatLow
+		elif speed == 'high':
+			if blowerHeatHi == '':
+				blowerHeatHi = senscom.blower()
+				s = blowerHeatHi
+			else:
+				s = blowerHeatHi
+	elif call == 'y':
+		if speed == 'low':
+			if blowerCoolLow == '':
+				blowerCoolLow = senscom.blower()
+				s = blowerCoolLow
+			else:
+				s = blowerCoolLow
 		else:
-			s = blowerLow
-	elif speed == 'med':
-		if blowerMed == '':
-			blowerMed = senscom.blower()
-			s = blowerMed
+			if blowerCoolHi == '':
+				blowerCoolHi = senscom.blower()
+				s = blowerCoolHi
+			else:
+				s = blowerCoolHi
+	elif call == 'g':
+		if blowerFan == '':
+			blowerFan = senscom.blower()
+			s = blowerFan
 		else:
-			s = blowerMed
-	elif speed == 'high':
-		if blowerHi == '':
-			blowerHi = senscom.blower()
-			s = blowerHi
-		else:
-			s = blowerHi
+			s = blowerFan
 		
 	if (s * .9) <= senscom.blower() <= (s * 1.1):
 		# log data
