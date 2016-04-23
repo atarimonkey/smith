@@ -24,12 +24,31 @@
 
 import json
 import logging
+import logging.handlers
 import time
 import phant
-import alerts
+#import alerts
 
 
 last_error = ''
+
+
+class Log:
+    """This class is to facilitate the logging of the mesurements in each of your modules"""
+    def __init__(self, logname):
+        """This is used to build the logger for the module you are calling this from.  You should create a new logger for
+        each module you want to log from.  Usage:  logger = log.Log(__name__)"""
+        assert type(logname) is str, "Invalid Log Name"
+        self.logger = logging.getLogger(logname)
+        self.logger.setLevel(logging.INFO)
+        self.log_file = logging.handlers.RotatingFileHandler("{0}.txt".format(logname), maxBytes=10485760,
+                                                             backupCount=1)
+        self.log_file.setLevel(logging.INFO)
+        self.logger.addHandler(self.log_file)
+        self.file_formatter = logging.Formatter('%(asctime)s  %(name)s:%(levelname)s: %(message)s',
+                                                datefmt='%Y/%m/%d %H:%M:%S')
+        self.log_file.setFormatter(self.file_formatter)
+
 
 def clear_log():
     os.remove('log')
