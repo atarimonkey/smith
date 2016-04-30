@@ -7,6 +7,8 @@
 #
 
 import os, serial, bme280
+import math
+
 
 #use this space for setting gpio 0 and 1 to '3' only needed on the pcDuino
 os.system('echo "3" > /sys/devices/virtual/misc/gpio/modes/gpio0')
@@ -16,7 +18,7 @@ si2cadd = #i2c address for the supply sensor
 sbus = # bus for the supply sensor
 ri2cadd = # i2c address for the return sensor
 rbus = #bus for the return sensor
-sbme = bme280.BME280(sbus, si2cadd) 
+sbme = bme280.BME280(sbus, si2cadd)
 rbme = bme280.BME280(rbus, ri2cadd)
 
 
@@ -25,14 +27,14 @@ def inducer():
         return x
 
 def flame():
-	x = comm('e')
+    x = comm('e')
     if x == '1' or 'True':
-		return True
+        return True
     else:
         return False
 
 def blower():
-	x = float(comm('g'))
+    x = float(comm('g'))
     return x
 
 def temp_rise():
@@ -40,24 +42,24 @@ def temp_rise():
         return deltaT
 
 def temp_drop():
-	deltaT = returnTemp() - supplyTemp()
-	return deltaT
+    deltaT = returnTemp() - supplyTemp()
+    return deltaT
 
 def delta_h():
-	d = returnHumid() - supplyHumid()
-	return d
+    d = returnHumid() - supplyHumid()
+    return d
 
 def delta_e():
-	e = entholpy(returnTemp(), returnHumid()) - entholpy(supplyTemp(), supplyHumid())
+    e = entholpy(returnTemp(), returnHumid()) - entholpy(supplyTemp(), supplyHumid())
     return e
 
 def capacity(cfm):
-	cap = delta_e() * 4.5 * cfm
+    cap = delta_e() * 4.5 * cfm
     return cap
 
 def entholpy(temp, humid):
-	t = temp + 459.67
-	n = math.log(t)
+    t = temp + 459.67
+    n = math.log(t)
     l = -10440.4 / t - 11.29465 - 0.02702235 * t + 0.00001289036 * t ** 2 - 0.000000002478068 * t ** 3 + 6.545967 * n
     s = math.exp(l)
     p = humid / 100 * s
@@ -66,31 +68,40 @@ def entholpy(temp, humid):
     return h
 
 def returnTemp():
-	x = rbme.readData('t')
+    x = rbme.readData('t')
     return x
 
 def returnHumid():
-	x = rbme.readData('h')
+    x = rbme.readData('h')
     return x
 
 def returnPress():
-	x = rbme.readData('p')
-	return x
+    x = rbme.readData('p')
+    return x
 
 def supplyTemp():
-	x = sbme.readData('t')
+    x = sbme.readData('t')
     return x
 
 def supplyHumid():
-	x = sbme.readData('h')
+    x = sbme.readData('h')
     return x
 
 def supplyPress():
-	x = sbme.readData('p')
-	return x
+    x = sbme.readData('p')
+    return x
+
+def odt():
+    pass
+
+def cond_fan():
+    pass
+
+def compressor():
+    pass
 
 def comm(z):
-	# handles the communication
+    # handles the communication
     myPort = serial.Serial('/dev/ttyS1', self.comm_speed, timeout = 10)
     myPort.write(z)
     x = myPort.readline()

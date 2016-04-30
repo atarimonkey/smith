@@ -2,25 +2,25 @@
 # -*- coding: utf-8 -*-
 #
 #  compare.py
-#  
+#
 #  Copyright 2016 David Keuchel <david@david-Inspiron-3521>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 
 import senscom, time,
 
@@ -32,6 +32,12 @@ blowerFan = ''
 
 inducerLow = ''
 inducerHi = ''
+
+condFanLow = ''
+condFanHi = ''
+
+compLow = ''
+compHi = ''
 
 # check the blower amps
 def blowerAmps(speed):
@@ -62,6 +68,11 @@ def blowerAmps(speed):
 
 # alt blower check
 def altBlowerAmps(call, speed):
+	global blowerHeatLow
+	global blowerHeatHi
+	global blowerCoolLow
+	global blowerCoolHi
+	global blowerFan
 	if call == 'w':
 		if speed == 'low':
 			if blowerHeatLow == '':
@@ -118,6 +129,8 @@ def inducerAmps(stage):
 			return False
 
 def altInducerAmps(speed):
+    global inducerLow
+    global inducerHi
 	if speed == 'low':
 		if inducerLow == '':
 			inducerLow = senscom.inducer()
@@ -196,6 +209,50 @@ def capacityCheck(tonage, cfm):
 		return True
 	else:
 		return False
+		
+def cond_fan_check(stage):
+    global condFanLow
+    global condFanHi
+    if stage == 'low':
+        if condFanLow == '':
+            condFanLow = senscom.cond_fan()
+            f = condFanLow
+        else:
+            f = condFanLow
+    else:
+        if condFanHi == '':
+            condFanHi = senscom.cond_fan()
+            f = condFanHi
+        else:
+            f = condFanHi
+
+    if (f * .9) < senscom.cond_fan() < (f * 1.1):
+        # log data
+        return True
+    else:
+        return False
+
+def comp_check(stage):
+    global compLow
+    global compHi
+    if stage == 'low':
+        if compLow == '':
+            compLow = senscom.compressor()
+            c = compLow
+        else:
+            c = compLow
+    else:
+        if compHi == '':
+            compHi = senscom.compressor()
+            c = compHi
+        else:
+            c = compHi
+
+    if (c * .9) < senscom.compressor() < (c * 1.1):
+        # log data
+        return True
+    else:
+        return False
 
 def main():
 	

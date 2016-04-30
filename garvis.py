@@ -82,6 +82,37 @@ class Equipment(object):
 		else:
 			return False
 
+    def troubleshoot_condenser(self):
+        cond_fan = ''
+        compressor = ''
+        odt = ''
+        stage = ''
+
+        if Tstat.cool_read() == 'y':
+            stage = 'low'
+        elif Tstat.cool_read():
+            stage = 'high'
+        else:
+            pass
+
+        if stage == True:
+            odt = senscom.odt()
+            cond_fan = compare.cond_fan_check(stage)
+            compressor = compare.comp_check(stage)
+            if odt > 65.0:
+                if cond_fan == True:
+                    if compressor == True:
+                        return False
+                    else:
+                        #compressor issue
+                        return True
+                else:
+                    #fan issue
+                    return True
+            else:
+                #too cold to test properly
+                return True
+
 class GasFurnace(Equipment):
 	def __init__(self, heat_stages, timed_stages, heatBot):
 		super(GasFurnace, self).__init__(self, 'furnace', heat_stages, timed_stages, heatBot)
@@ -166,6 +197,9 @@ class Condenser(Equipment):
                 if compare.compresser(stage) == True:
                     if p > 4:
                         if compare.tempdrop(stage) == True:
+                            if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == True:
+                                return True
+
 
 
 
