@@ -21,66 +21,68 @@
 #  MA 02110-1301, USA.
 #
 #
-import time, compare
+import time
+import compare
+import Tstat
 
-class Equipment(object):	
-	def __init__(heat_type, heat_stages, timed_stages, heatBot, heatpump, cooling_stages, cooling_tonage, cooling_cfm, coolBot):
-		self.heat_type = heat_type
-		self.heat_stages = heat_stages
-		self.timed_stages = timed_stages
-		self.heatpump = heatpump
-		self.heatBot = heatBot
-		self.cooling_stages = cooling_stages
-		self.cooling_tonage = cooling_tonage
-		self.cooling_cfm = cooling_cfm
-		self.coolBot
-		
-	def troubleshoot_furnace(self, f):
-		burners = f
-		ind = ''
-		fla = ''
-		blo = ''
-		delta_T = ''
-		stage = ''
-		
-		if Tstat.heat_read() == 'w1':
-			stage = 'low'
-		elif Tstat.heat_read() == 'w2':
-			stage = 'high'
-		else:
-			pass
-		
-		if stage == True:
-			ind = compare.altInducerAmps(stage)
-			fla = compare.flameCheck()
-			blo = compare.altBlowerAmps('w', stage)
-			delta_T = compare.tempRiseGas(stage)
-			if ind == True:
-				if fla == True:
-					# needs a way to tell if it lit or not
-					if blo == True:
-						if delta_T == True:
-							return False
-						else:
-							# airflow error
-							return True
-					else:
-						# blower error
-						return True
-				elif burners == True and not fla:
-					# flame senser error
-					return True
-				elif burners and fla == False:
-					# ignitor/ gas valve error
-					return True
-				else:
-					# ignitor/gas/flame sensor error
-					return True
-			else:
-				# inducer error
-				return True
-		else:
-			return False
+class Equipment(object):
+    def __init__(heat_type, heat_stages, timed_stages, heatBot, heatpump, cooling_stages, cooling_tonage, cooling_cfm, coolBot):
+        self.heat_type = heat_type
+        self.heat_stages = heat_stages
+        self.timed_stages = timed_stages
+        self.heatpump = heatpump
+        self.heatBot = heatBot
+        self.cooling_stages = cooling_stages
+        self.cooling_tonage = cooling_tonage
+        self.cooling_cfm = cooling_cfm
+        self.coolBot
+
+    def troubleshoot_furnace(self, f):
+        burners = f
+        ind = ''
+        fla = ''
+        blo = ''
+        delta_T = ''
+        stage = ''
+
+        if Tstat.heat_read() == 'w1':
+            stage = 'low'
+        elif Tstat.heat_read() == 'w2':
+            stage = 'high'
+        else:
+            pass
+
+        if stage == True:
+            ind = compare.altInducerAmps(stage)
+            fla = compare.flameCheck()
+            blo = compare.altBlowerAmps('w', stage)
+            delta_T = compare.tempRiseGas(stage)
+            if ind == True:
+                if fla == True:
+                    # needs a way to tell if it lit or not
+                    if blo == True:
+                        if delta_T == True:
+                            return False
+                        else:
+                            # airflow error
+                            return True
+                    else:
+                        # blower error
+                        return True
+                elif burners == True and not fla:
+                    # flame senser error
+                    return True
+                elif burners and fla == False:
+                    # ignitor/ gas valve error
+                    return True
+                else:
+                    # ignitor/gas/flame sensor error
+                    return True
+            else:
+                # inducer error
+                return True
+        else:
+            return False
 
     def troubleshoot_condenser(self):
         cond_fan = ''
@@ -90,7 +92,7 @@ class Equipment(object):
 
         if Tstat.cool_read() == 'y':
             stage = 'low'
-        elif Tstat.cool_read():
+        elif Tstat.cool_read() == 'y2':
             stage = 'high'
         else:
             pass
@@ -113,69 +115,122 @@ class Equipment(object):
                 #too cold to test properly
                 return True
 
+    def troubleshoot_cooling_indoor(self):
+        stage = ''
+        blower = ''
+        deltaT = ''
+        capacity = ''
+        static = ''
+
+        if Tstat.cool_read() == 'y':
+            stage = 'low'
+        elif Tstat.cool_read() == 'y2':
+            stage = 'high'
+        else:
+            return False
+
+        blower = compare.altBlowerAmps('y', stage)
+        deltaT = compare.tempDrop(stage)
+        capacity = compare.capacityCheck(self.cooling_tonage, self.cooling_cfm)
+        static = compare.stacicPressureCheck()
+
+        if blower == True:
+            if deltaT == True:
+                if capacity == True:
+                    return False
+                else:
+                    if static == True
+                        if self.coolBot == True:
+                            if self.troubleshoot_condenser() == True:
+                                # low refrigerant
+                                return True
+                            else:
+                                pass
+                        else:
+                            #low refrigerant / condenser issue
+                    else:
+                        #airflow
+                        return True
+            else:
+                if static == True:
+                    if self.coolBot == True:
+                        if self.troubleshoot_condenser() == True:
+                            # airflow issues / clogged filter
+                            return True
+                        else:
+                            pass
+                    else:
+                        # condenser issue
+                else:
+                    #airflow issue
+                    return True
+        else:
+            # blower issue
+            return True
+
 class GasFurnace(Equipment):
-	def __init__(self, heat_stages, timed_stages, heatBot):
-		super(GasFurnace, self).__init__(self, 'furnace', heat_stages, timed_stages, heatBot)
-		self.heat_stages = heat_stages
-		self.timed_stages = timed_stages
-		self.heatBot = heatBot
-			
-	def furnace_stage(self, stage):
-		if compare.altInducerAmps(stage) == True:
-			if compare.flameCheck() == True:
-				if compare.altBlowerAmps('w', stage) == True:
-					if compare.tempRiseGas(stage) == True:
-						return True
-					else:
-						# troubleshoot mode
-						Equipment.troubleshoot_furnace(True)
-						return False
-				else:
-					#troubleshoot mode
-					Equipment.troubleshoot_furnace(True)
-					return False
-			else:
-				#troubleshoot mode
-				Equipment.troubleshoot_furnace(True)
-				return False
-		else:
-			#troubleshoot mode
-			Equipment.troubleshoot_furnace(True)
-			return False
-		
-	def furnace_start(self, stage):
-		t = 0
-		if compare.altInducerAmps('high'):
-			while t < 30:
-				t = t + 1
-				time.sleep(1)
-			if compare.flameCheck():
-				while t < 33:
-					t = t + 1
-					time.sleep(1)
-				if compare.flameCheck():
-					while t < 95:
-						t = t + 1
-						time.sleep(1)
-					if compare.altBlowerAmps('w', stage):
-						return True
-					else:
-						# troubleshoot mode
-						Equipment.troubleshoot_furnace(True)
-						return False
-				else:
-					# troubleshoot
-					Equipment.troubleshoot_furnace(True)
-					return False
-			else:
-				# troubleshoot
-				Equipment.troubleshoot_furnace(False)
-				return False
-		else:
-			#troubleshoot
-			Equipment.troubleshoot_furnace(False)
-			return False
-	
+    def __init__(self, heat_stages, timed_stages, heatBot):
+        super(GasFurnace, self).__init__(self, 'furnace', heat_stages, timed_stages, heatBot)
+        self.heat_stages = heat_stages
+        self.timed_stages = timed_stages
+        self.heatBot = heatBot
+
+    def furnace_stage(self, stage):
+        if compare.altInducerAmps(stage) == True:
+            if compare.flameCheck() == True:
+                if compare.altBlowerAmps('w', stage) == True:
+                    if compare.tempRiseGas(stage) == True:
+                        return True
+                    else:
+                        # troubleshoot mode
+                        Equipment.troubleshoot_furnace(True)
+                        return False
+                else:
+                    #troubleshoot mode
+                    Equipment.troubleshoot_furnace(True)
+                    return False
+            else:
+                #troubleshoot mode
+                Equipment.troubleshoot_furnace(True)
+                return False
+        else:
+            #troubleshoot mode
+            Equipment.troubleshoot_furnace(True)
+            return False
+
+    def furnace_start(self, stage):
+        t = 0
+        if compare.altInducerAmps('high'):
+            while t < 30:
+                t = t + 1
+                time.sleep(1)
+            if compare.flameCheck():
+                while t < 33:
+                    t = t + 1
+                    time.sleep(1)
+                if compare.flameCheck():
+                    while t < 95:
+                        t = t + 1
+                        time.sleep(1)
+                    if compare.altBlowerAmps('w', stage):
+                        return True
+                    else:
+                        # troubleshoot mode
+                        Equipment.troubleshoot_furnace(True)
+                        return False
+                else:
+                    # troubleshoot
+                    Equipment.troubleshoot_furnace(True)
+                    return False
+            else:
+                # troubleshoot
+                Equipment.troubleshoot_furnace(False)
+                return False
+        else:
+            #troubleshoot
+            Equipment.troubleshoot_furnace(False)
+            return False
+
 class Condenser(Equipment):
 
     def __init__(self, heatpump, cooling_stages, cooling_tonage, cooling_cfm, coolBot):
@@ -204,9 +259,9 @@ class Condenser(Equipment):
 
 
 def main():
-	
-	return 0
+
+    return 0
 
 if __name__ == '__main__':
-	main()
+    main()
 

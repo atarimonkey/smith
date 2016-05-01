@@ -39,177 +39,189 @@ condFanHi = ''
 compLow = ''
 compHi = ''
 
+pressure = ''
+
 # check the blower amps
 def blowerAmps(speed):
-	if speed == 'low':
-		if 0.5 <= senscom.blower() <= 2.6:
-			# log data
-			return True
-		else:
-			return False
-	elif speed == 'med':
-		if 1.0 <= senscom.blower() <= 4.6:
-			# log data
-			return True
-		else:
-			return False
-	elif speed == 'high':
-		if 4.5 <= senscom.blower() <= 10.0:
-			# log data
-			return True
-		else:
-			return False
-	else:
-		if 2.0 <= senscom.blower() <= 10.0:
-			# log data
-			return True
-		else:
-			return False
+    #log data
+    if speed == 'low':
+        if 0.5 <= senscom.blower() <= 2.6:
+            return True
+        else:
+            return False
+    elif speed == 'med':
+        if 1.0 <= senscom.blower() <= 4.6:
+            return True
+        else:
+            return False
+    elif speed == 'high':
+        if 4.5 <= senscom.blower() <= 10.0:
+            return True
+        else:
+            return False
+    else:
+        if 2.0 <= senscom.blower() <= 10.0:
+            return True
+        else:
+            return False
 
 # alt blower check
 def altBlowerAmps(call, speed):
-	global blowerHeatLow
-	global blowerHeatHi
-	global blowerCoolLow
-	global blowerCoolHi
-	global blowerFan
-	if call == 'w':
-		if speed == 'low':
-			if blowerHeatLow == '':
-				blowerHeatLow = senscom.blower()
-				s = blowerHeatLow
-			else:
-				s = blowerHeatLow
-		elif speed == 'high':
-			if blowerHeatHi == '':
-				blowerHeatHi = senscom.blower()
-				s = blowerHeatHi
-			else:
-				s = blowerHeatHi
-	elif call == 'y':
-		if speed == 'low':
-			if blowerCoolLow == '':
-				blowerCoolLow = senscom.blower()
-				s = blowerCoolLow
-			else:
-				s = blowerCoolLow
-		else:
-			if blowerCoolHi == '':
-				blowerCoolHi = senscom.blower()
-				s = blowerCoolHi
-			else:
-				s = blowerCoolHi
-	elif call == 'g':
-		if blowerFan == '':
-			blowerFan = senscom.blower()
-			s = blowerFan
-		else:
-			s = blowerFan
-		
-	if (s * .9) <= senscom.blower() <= (s * 1.1):
-		# log data
-		return True
-	else:
-		return False
-		
+    global blowerHeatLow
+    global blowerHeatHi
+    global blowerCoolLow
+    global blowerCoolHi
+    global blowerFan
+    if call == 'w':
+        if speed == 'low':
+            if blowerHeatLow == '':
+                blowerHeatLow = senscom.blower()
+                s = blowerHeatLow
+            else:
+                s = blowerHeatLow
+        elif speed == 'high':
+            if blowerHeatHi == '':
+                blowerHeatHi = senscom.blower()
+                s = blowerHeatHi
+            else:
+                s = blowerHeatHi
+    elif call == 'y':
+        if speed == 'low':
+            if blowerCoolLow == '':
+                blowerCoolLow = senscom.blower()
+                s = blowerCoolLow
+            else:
+                s = blowerCoolLow
+        else:
+            if blowerCoolHi == '':
+                blowerCoolHi = senscom.blower()
+                s = blowerCoolHi
+            else:
+                s = blowerCoolHi
+    elif call == 'g':
+        if blowerFan == '':
+            blowerFan = senscom.blower()
+            s = blowerFan
+        else:
+            s = blowerFan
+
+    #log data
+
+    if (s * .9) <= senscom.blower() <= (s * 1.1):
+        return True
+    else:
+        return False
 
 # check the inducer amps
 def inducerAmps(stage):
-	if stage == 'low':
-		if 0.5 < senscom.inducer() < 1.3:
-			# log data
-			return True
-		else:
-			return False
-	else:
-		if 0.5 < senscom.inducer() 2.0:
-			# log data
-			return True
-		else:
-			return False
+    #log data
+    if stage == 'low':
+        if 0.5 < senscom.inducer() < 1.3:
+            return True
+        else:
+            return False
+    else:
+        if 0.5 < senscom.inducer() 2.0:
+            return True
+        else:
+            return False
 
 def altInducerAmps(speed):
     global inducerLow
     global inducerHi
-	if speed == 'low':
-		if inducerLow == '':
-			inducerLow = senscom.inducer()
-			s = inducerLow
-	else:
-		if inducerHi == '':	
-			inducerHi = senscom.inducer()
-			s = inducerHi
-	
-	if (s * .9) <= senscom.inducer() <= (s * 1.1):
-		# log data
-		return True
-	else:
-		return False
+    if speed == 'low':
+        if inducerLow == '':
+            inducerLow = senscom.inducer()
+            s = inducerLow
+    else:
+        if inducerHi == '':	
+            inducerHi = senscom.inducer()
+            s = inducerHi
+
+    # log data
+
+    if (s * .9) <= senscom.inducer() <= (s * 1.1):
+        return True
+    else:
+        return False
 
 # check the flame sensor
 def flameCheck():
-	if senscom.flame() == 'True':
-		# log data
-		return True
-	else:
-		return False
-		
+    # log data
+    if senscom.flame() == 'True':
+        return True
+    else:
+        return False
+
 # check the temp rise
 def tempRiseGas(stage):
-	if stage == 'low':
-		if 20 <= senscom.temp_rise() <= 35:
-			#log data
-			return True
-		else:
-			return False
-	else:
-		if 30 <= senscom.temp_rise() <= 70:
-			#log data
-			return True
-		else:
-			return False
-		
+    # log data
+    if stage == 'low':
+        if 20 <= senscom.temp_rise() <= 35:
+            return True
+        else:
+            return False
+    else:
+        if 30 <= senscom.temp_rise() <= 70:
+            return True
+        else:
+            return False
+
 # check the temp drop
 def tempDrop(stage):
-	if stage == 'low':
-		if 15 <= senscom.temp_drop() <= 20:
-			#log data
-			return True
-		else:
-			return False
-	else:
-		if 18 <= senscom.temp_drop() <= 26:
-			#log data
-			return True
-		else:
-			return False
+    #log data
+    if stage == 'low':
+        if 15 <= senscom.temp_drop() <= 20:
+            return True
+        else:
+            return False
+    else:
+        if 18 <= senscom.temp_drop() <= 26:
+            return True
+        else:
+            return False
 
 # check capacity
 def capacityCheck(tonage, cfm):
-	btu = ''
-	if tonage == 1.5:
-		btu = 18000
-	elif tonage == 2:
-		btu = 24000
-	elif tonage == 2.5:
-		btu = 30000
-	elif tonage == 3:
-		btu = 36000
-	elif tonage == 3.5:
-		btu = 42000
-	elif tonage == 4:
-		btu = 48000
-	elif tonage == 5:
-		btu = 60000
-	else:
-		pass
-	
-	if (btu * .9) <= senscom.capacity(cfm) <= (btu * 1.1):
-		#log data
-		return True
-	else:
-		return False
-		
+    btu = ''
+    if tonage == 1.5:
+        btu = 18000
+    elif tonage == 2:
+        btu = 24000
+    elif tonage == 2.5:
+        btu = 30000
+    elif tonage == 3:
+        btu = 36000
+    elif tonage == 3.5:
+        btu = 42000
+    elif tonage == 4:
+        btu = 48000
+    elif tonage == 5:
+        btu = 60000
+    else:
+        pass
+
+    #log data
+
+    if (btu * .9) <= senscom.capacity(cfm) <= (btu * 1.1):
+        return True
+    else:
+        return False
+
+def staticPressureCheck():
+    global pressure
+    p = senscom.supplyPress() + senscom.returnPress
+
+    if pressure == '':
+        pressure = p
+
+    # log pressure
+
+    if (pressure * .9) < p < (pressure * 1.1):
+        return True
+    else:
+        return False
+
 def cond_fan_check(stage):
     global condFanLow
     global condFanHi
@@ -226,8 +238,9 @@ def cond_fan_check(stage):
         else:
             f = condFanHi
 
+    #log data
+
     if (f * .9) < senscom.cond_fan() < (f * 1.1):
-        # log data
         return True
     else:
         return False
@@ -248,16 +261,17 @@ def comp_check(stage):
         else:
             c = compHi
 
+    #log data
+
     if (c * .9) < senscom.compressor() < (c * 1.1):
-        # log data
         return True
     else:
         return False
 
 def main():
-	
-	return 0
+
+    return 0
 
 if __name__ == '__main__':
-	main()
+    main()
 
