@@ -250,10 +250,63 @@ class Condenser(Equipment):
                 time.sleep(1)
                 t = t + 1
                 if compare.compresser(stage) == True:
-                    if p > 4:
-                        if compare.tempdrop(stage) == True:
-                            if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == True:
+                    if compare.altBlowerAmps('y', stage):
+                        if p > 4:
+                            if compare.tempDrop(stage) == True:
+                                if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == True:
+                                    return True
+                                else:
+                                    if Equipment.troubleshoot_cooling_indoor() == True:
+                                        return False
+                                    else:
+                                        return True
+                            else:
+                                if Equipment.troubleshoot_cooling_indoor() == True:
+                                    return False
+                                else:
+                                    return True
+                        else:
+                            return True
+                    else:
+                        if Equipment.troubleshoot_cooling_indoor() == True:
+                            return False
+                        else:
+                            return True
+                else:
+                    if Equipment.troubleshoot_cooling_indoor() == True:
+                        return False
+                    else:
+                        return True
+            else:
+                if Equipment.troubleshoot_cooling_indoor() == True:
+                    return False
+                else:
+                    return True
+        else:
+            if compare.altBlowerAmps('y', stage) == True:
+                if p > 4:
+                    if compare.tempDrop(stage) == True:
+                        if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == True:
+                            return True
+                        else:
+                            if Equipment.troubleshoot_cooling_indoor() == True:
+                                return False
+                            else:
                                 return True
+                    else:
+                        if Equipment.troubleshoot_cooling_indoor() == True:
+                            return False
+                        else:
+                            return True
+                else:
+                    return True
+            else:
+                if Equipment.troubleshoot_cooling_indoor() == True:
+                    return False
+                else:
+                    return True
+
+
 
 
 
