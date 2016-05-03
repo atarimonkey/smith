@@ -27,17 +27,16 @@ import logging
 import logging.handlers
 import time
 import phant
-#import alerts
 
 
 last_error = ''
 
 
 class Log:
-    """This class is to facilitate the logging of the mesurements in each of your modules"""
+    """This class is to facilitate the logging of the mesurements or errors in each of your modules"""
     def __init__(self, logname):
         """This is used to build the logger for the module you are calling this from.  You should create a new logger for
-        each module you want to log from.  Usage:  logger = log.Log(__name__)"""
+        each module you want to log from.  Usage:  logger = log.Log(modlule_name)"""
         assert type(logname) is str, "Invalid Log Name"
         self.logger = logging.getLogger(logname)
         self.logger.setLevel(logging.INFO)
@@ -48,6 +47,27 @@ class Log:
         self.file_formatter = logging.Formatter('%(asctime)s  %(name)s:%(levelname)s: %(message)s',
                                                 datefmt='%Y/%m/%d %H:%M:%S')
         self.log_file.setFormatter(self.file_formatter)
+        self.web_logger = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'bloweramps', 'call', 'capacity', 'deltae', 'deltat',
+                                      'error', 'induceramps', 'runtime', private_key='GP8ME8GEoyCvNN2x0z27')
+
+    def log_to_file(self, message):
+        """This function is used to log  a message to the log file defined for this module.
+        Usage: logger.log_to_file('Data to be logged')"""
+        assert type(message) is str, "Invalid log data"
+        self.logger.info(message)
+
+    def log_to_web(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
+        """This function is used to send log data to phant
+        Usage:  logger.log_to_web(call, error, run_time, blower_amps, inducer_amps, delta_t, delta_e, capacity)"""
+        self.web_logger.log(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
+
+    def log_to_all(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
+        """This function loggs to a file and sends log data to phant
+        Usage:  logger.log_to_all(call, error, run_time, blower_amps, inducer_amps, delta_t, delta_e, capacity)"""
+        self.web_logger.log(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
+        self.logger.info("Runtime={7}, Delta T={4}, Inducer Amps={6}, Error={5}, Delta E={3}, Call={1}, " \
+                         "Blower Amps={0}, Capacity={2}".format(blower_amps, call, capacity, delta_e, delta_t,
+                                                                    error, inducer_amps, run_time))
 
 
 def clear_log():
