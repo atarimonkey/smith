@@ -22,25 +22,26 @@
 #  
 #  
 
-import json
+# import json
 import logging
 import logging.handlers
 import time
 import phant
 
 
-last_error = ''
+# last_error = ''
 
 
 class Log:
-    """This class is to facilitate the logging of the mesurements or errors in each of your modules"""
+    """This class is to facilitate the logging of measurements or errors in each of your modules.
+    It can log to files and/or to the phant web service"""
     def __init__(self, logname):
-        """This is used to build the logger for the module you are calling this from.  You should create a new logger for
-        each module you want to log from.  Usage:  logger = log.Log(modlule_name)"""
+        """This defines the name of the logger and the file that will be logged to."""
         assert type(logname) is str, "Invalid Log Name"
+        self.file_log_cache = {}
         self.logger = logging.getLogger(logname)
         self.logger.setLevel(logging.INFO)
-        self.log_file = logging.handlers.RotatingFileHandler("{0}.txt".format(logname), maxBytes=10485760,
+        self.log_file = logging.handlers.RotatingFileHandler("{0}.log".format(logname), maxBytes=10485760,
                                                              backupCount=1)
         self.log_file.setLevel(logging.INFO)
         self.logger.addHandler(self.log_file)
@@ -50,67 +51,79 @@ class Log:
         self.web_logger = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'bloweramps', 'call', 'capacity', 'deltae', 'deltat',
                                       'error', 'induceramps', 'runtime', private_key='GP8ME8GEoyCvNN2x0z27')
 
+    def clean_cache(self, cache):
+        """Removes old cache entries"""
+        old_data = []
+        assert type(cache) is dict, "Invaled cache data"
+        for log_message in cache:
+            if cache[log_message] + 86400 < time.time():
+                old_data.append(log_message)
+
+        for data in old_data:
+            cache.pop(data)
+
     def log_to_file(self, message):
-        """This function is used to log  a message to the log file defined for this module.
-        Usage: logger.log_to_file('Data to be logged')"""
+        """Log a message to a log file using the name defined at creation, logname.log."""
         assert type(message) is str, "Invalid log data"
-        self.logger.info(message)
+        self.clean_cache(self.file_log_cache)
+        if message not in self.file_log_cache:
+            self.file_log_cache[message] = time.time()
+            print self.file_log_cache.keys()
+            self.logger.info(message)
 
     def log_to_web(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
-        """This function is used to send log data to phant
-        Usage:  logger.log_to_web(call, error, run_time, blower_amps, inducer_amps, delta_t, delta_e, capacity)"""
+        """Log data to the phant web service."""
         self.web_logger.log(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
 
     def log_to_all(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
-        """This function loggs to a file and sends log data to phant
-        Usage:  logger.log_to_all(call, error, run_time, blower_amps, inducer_amps, delta_t, delta_e, capacity)"""
-        self.web_logger.log(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
-        self.logger.info("Runtime={7}, Delta T={4}, Inducer Amps={6}, Error={5}, Delta E={3}, Call={1}, " \
+        """Log data to phant and the defined log file"""
+        self.log_to_web(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
+        self.log_to_file("Runtime={7}, Delta T={4}, Inducer Amps={6}, Error={5}, Delta E={3}, Call={1}, " \
                          "Blower Amps={0}, Capacity={2}".format(blower_amps, call, capacity, delta_e, delta_t,
                                                                     error, inducer_amps, run_time))
 
 
-def clear_log():
-    os.remove('log')
-    
-def entry(c, rt, ba, ia, dt, de, cap):
-    _ = StructuredMessage
-    p = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'Call', 'Error', 'Run Time', 'Blower Amps', 'Inducer Amps', 'Delta T', 'Delta E', 'capacity', privatekey = 'GP8ME8GEoyCvNN2x0z27')
-    logging.basicConfig(filename='log', level=logging.INFO, format='%(asctime)-15s %(message)s')
-    logging.info(_(c, run_time= rt, blower_amps= ba, inducer_amps= ia,
-                 delta_T= dt, delta_E= de, capacity= cap ))
-    p.log(c, 'None', rt, ba, ia, dt, de, cap)
-    
-def error(c, e, rt, ba, ia, dt, de, cap, warning):
-    # this may need to be simplified
-    global last_error
-    t2 = time.time()
-    p = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'Call', 'Error', 'RunTime', 'BlowerAmps', 'InducerAmps', 'DeltaT', 'DeltaE', 'capacity', privatekey = 'GP8ME8GEoyCvNN2x0z27')
-
-    if last_error == '' or (t2 - last_error) >= 86400:
-        #email a warning
-        warning 
-        last_error = t2
-        
-    logging.basicConfig(filename='log.error', level=logging.ERROR, format='%(asctime)-15s %(message)s')
-    logging.error(_(c, error= e, run_time= rt, blower_amps= ba, inducer_amps= ia,
-                 delta_T= dt, delta_E= de ))
-    p.log(c, e, rt, ba, ia, dt, de, cap)
-    
-class StructuredMessage(object):
-    def __init__(self, message, **kwargs):
-        self.message = message
-        self.kwargs = kwargs
-
-    def __str__(self):
-        return '%s >>> %s' % (self.message, json.dumps(self.kwargs))
-
-
-
-def main():
-	print 'test'
-	return 0
-
-if __name__ == '__main__':
-	main()
+# def clear_log():
+#     os.remove('log')
+#
+# def entry(c, rt, ba, ia, dt, de, cap):
+#     _ = StructuredMessage
+#     p = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'Call', 'Error', 'Run Time', 'Blower Amps', 'Inducer Amps', 'Delta T', 'Delta E', 'capacity', privatekey = 'GP8ME8GEoyCvNN2x0z27')
+#     logging.basicConfig(filename='log', level=logging.INFO, format='%(asctime)-15s %(message)s')
+#     logging.info(_(c, run_time= rt, blower_amps= ba, inducer_amps= ia,
+#                  delta_T= dt, delta_E= de, capacity= cap ))
+#     p.log(c, 'None', rt, ba, ia, dt, de, cap)
+#
+# def error(c, e, rt, ba, ia, dt, de, cap, warning):
+#     # this may need to be simplified
+#     global last_error
+#     t2 = time.time()
+#     p = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'Call', 'Error', 'RunTime', 'BlowerAmps', 'InducerAmps', 'DeltaT', 'DeltaE', 'capacity', privatekey = 'GP8ME8GEoyCvNN2x0z27')
+#
+#     if last_error == '' or (t2 - last_error) >= 86400:
+#         #email a warning
+#         warning
+#         last_error = t2
+#
+#     logging.basicConfig(filename='log.error', level=logging.ERROR, format='%(asctime)-15s %(message)s')
+#     logging.error(_(c, error= e, run_time= rt, blower_amps= ba, inducer_amps= ia,
+#                  delta_T= dt, delta_E= de ))
+#     p.log(c, e, rt, ba, ia, dt, de, cap)
+#
+# class StructuredMessage(object):
+#     def __init__(self, message, **kwargs):
+#         self.message = message
+#         self.kwargs = kwargs
+#
+#     def __str__(self):
+#         return '%s >>> %s' % (self.message, json.dumps(self.kwargs))
+#
+#
+#
+# def main():
+# 	print 'test'
+# 	return 0
+#
+# if __name__ == '__main__':
+# 	main()
 
