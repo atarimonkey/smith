@@ -167,6 +167,19 @@ def tempRiseGas(stage):
         else:
             return False
 
+def tempRiseHp(stage):
+    if stage == 'low':
+        if 14 <= senscom.temp_rise() <= 20:
+            return True
+        else:
+            return False
+    else:
+        if 18 <= senscom.temp_rise() <= 30:
+            return True
+        else:
+            return False
+
+
 # check the temp drop
 def tempDrop(stage):
     #log data

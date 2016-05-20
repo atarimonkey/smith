@@ -161,9 +161,61 @@ class Equipment(object):
                             pass
                     else:
                         # condenser issue
+                        return True
                 else:
                     #airflow issue
                     return True
+        else:
+            # blower issue
+            return True
+
+    def troubleshoot_hp_indoor(self):
+        stage = ''
+        blower = ''
+        deltaT = ''
+        static = ''
+
+        if Tstat.cool_read() == 'y' and Tstat.reversing():
+            stage = 'low'
+        elif Tstat.cool_read() == 'y2' and Tstat.reversing():
+            stage = 'high'
+        else:
+            return False
+
+         blower = compare.altBlowerAmps('y', stage)
+        deltaT = compare.tempRiseHp(stage)
+        static = compare.stacicPressureCheck()
+
+        if blower == True:
+            if deltaT == True:
+                return False
+            else:
+                if static == True
+                    if self.coolBot == True:
+                        if self.troubleshoot_condenser() == True:
+                            # low refrigerant/ defrost/ condenser issue
+                            return True
+                        else:
+                            pass
+                    else:
+                        #low refrigerant / condenser issue
+                else:
+                    #airflow
+                    return True
+        else:
+            if static == True:
+                if self.coolBot == True:
+                    if self.troubleshoot_condenser() == True:
+                        # airflow issues / clogged filter
+                        return True
+                    else:
+                        pass
+                else:
+                    # condenser issue
+                    return True
+            else:
+                #airflow issue
+                return True
         else:
             # blower issue
             return True
@@ -302,6 +354,59 @@ class Condenser(Equipment):
                     return True
             else:
                 if Equipment.troubleshoot_cooling_indoor() == True:
+                    return False
+                else:
+                    return True
+
+    def hp(self, p, stage):
+        t = 0
+        if self.coolBot == True:
+            time.sleep(1)
+            t = t + 1
+            if compare.condenserFan(stage) == True:
+                time.sleep(1)
+                t = t + 1
+                if compare.compresser(stage) == True:
+                    if compare.altBlowerAmps('y', stage):
+                        if p > 4:
+                            if compare.tempRiseHp(stage) == True:
+                                return True
+                            else:
+                                if Equipment.troubleshoot_hp_indoor() == True:
+                                    return False
+                                else:
+                                    return True
+                        else:
+                            return True
+                    else:
+                        if Equipment.troubleshoot_hp_indoor() == True:
+                            return False
+                        else:
+                            return True
+                else:
+                    if Equipment.troubleshoot_hp_indoor() == True:
+                        return False
+                    else:
+                        return True
+            else:
+                if Equipment.troubleshoot_hp_indoor() == True:
+                    return False
+                else:
+                    return True
+        else:
+            if compare.altBlowerAmps('y', stage) == True:
+                if p > 4:
+                    if compare.tempRiseHp(stage) == True:
+                        return True
+                    else:
+                        if Equipment.troubleshoot_hp_indoor() == True:
+                            return False
+                        else:
+                            return True
+                else:
+                    return True
+            else:
+                if Equipment.troubleshoot_hp_indoor() == True:
                     return False
                 else:
                     return True
