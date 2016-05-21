@@ -26,6 +26,7 @@ import compare
 import Tstat
 
 class Equipment(object):
+
     def __init__(heat_type, heat_stages, timed_stages, heatBot, heatpump, cooling_stages, cooling_tonage, cooling_cfm, coolBot):
         self.heat_type = heat_type
         self.heat_stages = heat_stages
@@ -175,14 +176,16 @@ class Equipment(object):
         deltaT = ''
         static = ''
 
-        if Tstat.cool_read() == 'y' and Tstat.reversing():
+        if Tstat.cool_read() == 'y' and Tstat.reversing() and not Tstat.heat_read():
             stage = 'low'
-        elif Tstat.cool_read() == 'y2' and Tstat.reversing():
+        elif Tstat.cool_read() == 'y2' and Tstat.reversing() and not Tstat.heat_read():
             stage = 'high'
+        elif Tstat.cool_read() and Tstat.reversing() and Tstat.heat_read():
+            stage = 'aux'
         else:
             return False
 
-         blower = compare.altBlowerAmps('y', stage)
+        blower = compare.altBlowerAmps('y', stage)
         deltaT = compare.tempRiseHp(stage)
         static = compare.stacicPressureCheck()
 
@@ -220,7 +223,70 @@ class Equipment(object):
             # blower issue
             return True
 
+    def troubleshoot_geo(self):
+        stage = ''
+        blower = ''
+        deltaT = ''
+        capacity = ''
+        static = ''
+        comp = ''
+        pumps = ''
+
+        if Tstat.cool_read() == 'y'and not Tstat.reversing and not Tstat.heat_read():
+            stage = 'low'
+        elif Tstat.cool_read() == 'y2' and not Tstat.reversing and not Tstat.heat_read():
+            stage = 'high'
+        if Tstat.cool_read() == 'y'and Tstat.reversing and not Tstat.heat_read():
+            stage = 'low'
+        elif Tstat.cool_read() == 'y2' and Tstat.reversing and not Tstat.heat_read():
+            stage = 'high'
+        elif Tstat.cool_read() and Tstat.reversing and Tstat.heat_read():
+            stage = 'aux'
+        else:
+            return False
+
+        if Tstat.reversing():
+            deltaT = compare.tempRiseHp(stage)
+        else:
+            deltaT = compare.tempDrop(stage)
+
+        blower = compare.altBlowerAmps(stage)
+        capacity = compare.capacityCheck(self.cooling_tonage, self.cooling_cfm)
+        static = compare.staticPressureCheck()
+        comp = compare.comp_check(stage)
+        pumps = compare.pump_check()
+
+        if stage:
+            if pumps:
+                if comp:
+                    if blower:
+                        if static:
+                            if deltaT:
+                                if not Tstat.reversing():
+                                    if capacity:
+                                        return False
+                                    else:
+                                        # low water/ refrigerant
+                                        return True
+                                else:
+                                    return False
+                            else:
+                                # low water/ refrigerant
+                                return True
+                        # clogged filter/ airflow restiction
+                        return True
+                    else:
+                        # bad blower
+                        return True
+                else:
+                    # bad compressor
+                    return True
+            else:
+                # bad pumps
+                return True
+
 class GasFurnace(Equipment):
+
     def __init__(self, heat_stages, timed_stages, heatBot):
         super(GasFurnace, self).__init__(self, 'furnace', heat_stages, timed_stages, heatBot)
         self.heat_stages = heat_stages
@@ -411,6 +477,39 @@ class Condenser(Equipment):
                 else:
                     return True
 
+    def geo_cool(self, p, stage):
+        t = 0
+        while t == 0:
+            time.sleep(1)
+            t = t + 1
+        if compare.compressor(stage):
+            if compare.altBlowerAmps('y', stage):
+                if p > 4:
+                    if compare.tempDrop(stage):
+                        if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm):
+                            return True
+                        else:
+                            if equipment.troubleshoot_geo():
+                                return False
+                            else:
+                                return True
+                    else:
+                        if equipment.troubleshoot_geo():
+                            return False
+                        else:
+                            return True
+                else:
+                    return True
+            else:
+                if equipment.troubleshoot_geo():
+                    return False
+                else:
+                    return True
+        else:
+            if equipment.troubleshoot_geo():
+                return False
+            else:
+                return True
 
 
 

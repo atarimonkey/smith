@@ -100,6 +100,9 @@ def cond_fan():
 def compressor():
     pass
 
+def pump():
+    pass
+
 def comm(z):
     # handles the communication
     myPort = serial.Serial('/dev/ttyS1', self.comm_speed, timeout = 10)

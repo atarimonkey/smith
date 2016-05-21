@@ -41,6 +41,8 @@ compHi = ''
 
 pressure = ''
 
+pumpAmps = ''
+
 # check the blower amps
 def blowerAmps(speed):
     #log data
@@ -173,8 +175,13 @@ def tempRiseHp(stage):
             return True
         else:
             return False
-    else:
+    elif stage == 'high':
         if 18 <= senscom.temp_rise() <= 30:
+            return True
+        else:
+            return False
+    elif stage == 'aux':
+        if 20 <= senscom.temp_rise() <= 40:
             return True
         else:
             return False
@@ -277,6 +284,21 @@ def comp_check(stage):
     #log data
 
     if (c * .9) < senscom.compressor() < (c * 1.1):
+        return True
+    else:
+        return False
+
+def pump_check():
+    global pumpAmps
+
+    if pumpAmp == '':
+        pumpAmps = senscom.pump()
+
+    p = pumpAmps
+
+    #log data
+
+    if (p * .9) <= senscom.pump() <= (p * 1.1):
         return True
     else:
         return False
