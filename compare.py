@@ -160,14 +160,20 @@ def tempRiseGas(stage):
     # log data
     if stage == 'low':
         if 20 <= senscom.temp_rise() <= 35:
-            return True
-        else:
+            return 'norm'
+        elif senscom.temp_rise() < 5:
             return False
+        elif 5 < senscom.temp_rise() < 20:
+            return 'low'
+        elif senscom.temp_rise() > 35:
+            return 'high'
     else:
         if 30 <= senscom.temp_rise() <= 70:
-            return True
-        else:
+            return 'norm'
+        elif senscom < 5:
             return False
+        elif 5 < senscom.temp_rise() < 30:
+            return 'low'
 
 def tempRiseHp(stage):
     if stage == 'low':

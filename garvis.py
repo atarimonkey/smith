@@ -38,7 +38,79 @@ class Equipment(object):
         self.cooling_cfm = cooling_cfm
         self.coolBot
 
-    def troubleshoot_furnace(self, f):
+    def general_heat(self, t, stage):
+        s = stage
+        if self.timed_stages:
+            if t < 600:
+                s = 'low'
+            else:
+                s = 'high'
+
+        if compare.staticPressureCheck():
+            if t >= 420:
+                if compare.tempRiseGas(s) == 'norm':
+                    return True
+                elif compare.tempRiseGas(s) == 'high':
+                    # troubleshoot mode
+                    if self.troubleshoot_gen_furn(t):
+                        return False
+                    else:
+                        return True
+                elif compare.tempRiseGas(s) == 'low':
+                    # troubleshoot mode
+                    if self.troubleshoot_gen_furn(t):
+                        return False
+                    else:
+                        return True
+            else:
+                return True
+        else:
+            # troubleshoot mode
+            if self.troubleshoot_gen_furn(t):
+                return False
+            else:
+                return True
+
+    def troubleshoot_gen_furn(t):
+        static = ''
+        delta_T = ''
+        s = ''
+
+        if self.timed_stages:
+            if Tstat.heat_read() == 'w1' or Tstat.heat_read() == 'w2':
+                if t < 600:
+                    s = 'low'
+                else:
+                    s = 'high'
+            else:
+                return True
+        else:
+            if Tstat.heat_read() == 'w1':
+                s = 'low'
+            elif Tstat.heat_read() == 'w2':
+                s = 'high'
+            else:
+                return False
+
+        static = compare.staticPressureCheck()
+        delta_T = compare.tempRiseGas()
+
+        if static:
+            if t > 420:
+                if delta_T == 'norm':
+                    return False
+                elif delta_T == 'low':
+                    #error 2 - low temp rise
+                    return True
+                elif delta_T == 'high':
+                    #error 1 - filter / airflow
+                    return True
+            else:
+                return False
+        else:
+            # error 1 - filter / airflow
+
+    def troubleshoot_furnace(self, f, t):
         burners = f
         ind = ''
         fla = ''
@@ -46,27 +118,38 @@ class Equipment(object):
         delta_T = ''
         stage = ''
 
-        if Tstat.heat_read() == 'w1':
-            stage = 'low'
-        elif Tstat.heat_read() == 'w2':
-            stage = 'high'
+        if self.timed_stages:
+            if Tstst.heat_read() == 'w2' or Tstat.heat_read() == 'w1':
+                if t < 600:
+                    stage = 'low'
+                else:
+                    stage = 'high'
         else:
-            pass
+            if Tstat.heat_read() == 'w1':
+                stage = 'low'
+            elif Tstat.heat_read() == 'w2':
+                stage = 'high'
+            else:
+                return False
 
         if stage == True:
             ind = compare.altInducerAmps(stage)
             fla = compare.flameCheck()
             blo = compare.altBlowerAmps('w', stage)
             delta_T = compare.tempRiseGas(stage)
+            static = compare.staticPressureCheck()
             if ind == True:
                 if fla == True:
                     # needs a way to tell if it lit or not
                     if blo == True:
-                        if delta_T == True:
-                            return False
-                        else:
-                            # airflow error
+                        if delta_T == 'norm':
+                            if static:
+                                return False
+                        elif delta_T == 'low':
+                            # setting error
                             return True
+                        elif delta_T == 'high':
+                            # error 1 - filter / airflow
                     else:
                         # blower error
                         return True
@@ -96,7 +179,7 @@ class Equipment(object):
         elif Tstat.cool_read() == 'y2':
             stage = 'high'
         else:
-            pass
+            return False
 
         if stage == True:
             odt = senscom.odt()
@@ -314,6 +397,34 @@ class GasFurnace(Equipment):
         else:
             #troubleshoot mode
             Equipment.troubleshoot_furnace(True)
+            return False
+
+    def furnace_timed(self, t):
+        if t < 600:
+            stage = 'low'
+        else:
+            stage = 'high'
+
+        if compare.altInducerAmps(stage) == True:
+            if compare.flameCheck() == True:
+                if compare.altBlowerAmps('w', stage) == True:
+                    if compare.tempRiseGas(stage) == True:
+                        return True
+                    else:
+                        # troubleshoot mode
+                        Equipment.troubleshoot_furnace(True, t)
+                        return False
+                else:
+                    #troubleshoot mode
+                    Equipment.troubleshoot_furnace(True, t)
+                    return False
+            else:
+                #troubleshoot mode
+                Equipment.troubleshoot_furnace(True, t)
+                return False
+        else:
+            #troubleshoot mode
+            Equipment.troubleshoot_furnace(True, t)
             return False
 
     def furnace_start(self, stage):
