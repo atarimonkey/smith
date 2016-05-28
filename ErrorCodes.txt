@@ -1,0 +1,12 @@
+Error 0 = normal operations 
+Error 1 = clogged filter / air flow
+Error 2 = low temperature rise
+Error 3 = high temperature rise
+Error 4 = low temperature drop
+Error 5 = high temperature drop
+Error 6 = low capacity
+# the following can alert multiple times a day
+Error 7 = Flame sensor error
+Error 8 = ignition error
+Error 9 = inducer motor error
+Error 10 = blower motor error
