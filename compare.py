@@ -22,7 +22,7 @@
 #
 #
 
-import senscom, time,
+import senscom
 
 blowerHeatLow = ''
 blowerHeatHi = ''
@@ -110,7 +110,11 @@ def altBlowerAmps(call, speed):
     #log data
 
     if (s * .9) <= senscom.blower() <= (s * 1.1):
-        return True
+        return 'norm'
+    elif (s * .1) < senscom.blower() < (s * .9):
+        return 'low'
+    elif senscom.blower() > (s * 1.1):
+        return 'high'
     else:
         return False
 
@@ -143,7 +147,11 @@ def altInducerAmps(speed):
     # log data
 
     if (s * .9) <= senscom.inducer() <= (s * 1.1):
-        return True
+        return 'norm'
+    elif (s * .1) < senscom.inducer() < (s * .9):
+        return 'low'
+    elif senscom.inducer() > (s * 1.1):
+        return 'high'
     else:
         return False
 
@@ -178,17 +186,29 @@ def tempRiseGas(stage):
 def tempRiseHp(stage):
     if stage == 'low':
         if 14 <= senscom.temp_rise() <= 20:
-            return True
-        else:
+            return 'norm'
+        elif senscom.temp_rise() <= 5:
             return False
+        elif 5 < senscom.temp_rise() < 14:
+            return 'low'
+        elif senscom.temp_rise() > 20:
+            return 'high'
     elif stage == 'high':
         if 18 <= senscom.temp_rise() <= 30:
-            return True
+            return 'norm'
+        elif 5 < senscom.temp_rise() < 18:
+            return 'low'
+        elif senscom.temp_rise() > 30:
+            return 'high'
         else:
             return False
     elif stage == 'aux':
         if 20 <= senscom.temp_rise() <= 40:
-            return True
+            return 'norm'
+        elif 5 < senscom.temp_rise() < 20:
+            return 'low'
+        elif senscom.temp_rise() > 40:
+            return 'high'
         else:
             return False
 
@@ -197,13 +217,21 @@ def tempRiseHp(stage):
 def tempDrop(stage):
     #log data
     if stage == 'low':
-        if 15 <= senscom.temp_drop() <= 20:
-            return True
+        if 14 <= senscom.temp_drop() <= 20:
+            return 'norm'
+        elif 5 < senscom.temp_drop() < 14:
+            return 'low'
+        elif senscom.temp_drop() > 20:
+            return 'high'
         else:
             return False
     else:
-        if 18 <= senscom.temp_drop() <= 26:
-            return True
+        if 16 <= senscom.temp_drop() <= 26:
+            return 'norm'
+        elif 5 < senscom.temp_drop() < 16:
+            return 'low'
+        elif senscom.temp_drop() > 26:
+            return 'high'
         else:
             return False
 
@@ -230,7 +258,9 @@ def capacityCheck(tonage, cfm):
     #log data
 
     if (btu * .9) <= senscom.capacity(cfm) <= (btu * 1.1):
-        return True
+        return 'norm'
+    elif (btu * .9) > senscom.capacity(cfm):
+        return 'low'
     else:
         return False
 
@@ -244,7 +274,11 @@ def staticPressureCheck():
     # log pressure
 
     if (pressure * .9) < p < (pressure * 1.1):
-        return True
+        return 'norm'
+    elif p < (pressure * .9):
+        return 'low'
+    elif p > (pressure * 1.1):
+        return 'high'
     else:
         return False
 
@@ -267,7 +301,11 @@ def cond_fan_check(stage):
     #log data
 
     if (f * .9) < senscom.cond_fan() < (f * 1.1):
-        return True
+        return 'norm'
+    elif (f * .1) < senscom.cond_fan() < (f * .9):
+        return 'low'
+    elif senscom.cond_fan() > (f * 1.1):
+        return 'high'
     else:
         return False
 
@@ -289,8 +327,12 @@ def comp_check(stage):
 
     #log data
 
-    if (c * .9) < senscom.compressor() < (c * 1.1):
-        return True
+    if (c * .9) <= senscom.compressor() <= (c * 1.1):
+        return 'norm'
+    elif (c * .1) < senscom.compressor() < (c * .9):
+        return 'low'
+    elif senscom.compressor() > (c * 1.1):
+        return 'high'
     else:
         return False
 
@@ -305,7 +347,11 @@ def pump_check():
     #log data
 
     if (p * .9) <= senscom.pump() <= (p * 1.1):
-        return True
+        return 'norm'
+    elif (p * .1) < senscom.pump() < (p * .9):
+        return 'low'
+    elif senscom.pump() > (p * 1.1):
+        return 'high'
     else:
         return False
 

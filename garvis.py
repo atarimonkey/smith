@@ -46,17 +46,11 @@ class Equipment(object):
             else:
                 s = 'high'
 
-        if compare.staticPressureCheck():
+        if compare.staticPressureCheck() == 'norm':
             if t >= 420:
                 if compare.tempRiseGas(s) == 'norm':
                     return True
-                elif compare.tempRiseGas(s) == 'high':
-                    # troubleshoot mode
-                    if self.troubleshoot_gen_furn(t):
-                        return False
-                    else:
-                        return True
-                elif compare.tempRiseGas(s) == 'low':
+                else:
                     # troubleshoot mode
                     if self.troubleshoot_gen_furn(t):
                         return False
@@ -95,7 +89,7 @@ class Equipment(object):
         static = compare.staticPressureCheck()
         delta_T = compare.tempRiseGas()
 
-        if static:
+        if static == 'norm':
             if t > 420:
                 if delta_T == 'norm':
                     return False
@@ -109,6 +103,7 @@ class Equipment(object):
                 return False
         else:
             # error 1 - filter / airflow
+            return True
 
     def troubleshoot_furnace(self, f, t):
         burners = f
@@ -138,20 +133,58 @@ class Equipment(object):
             blo = compare.altBlowerAmps('w', stage)
             delta_T = compare.tempRiseGas(stage)
             static = compare.staticPressureCheck()
-            if ind == True:
-                if fla == True:
+            if ind == 'norm':
+                if fla == 'norm':
                     # needs a way to tell if it lit or not
-                    if blo == True:
+                    if blo == 'norm':
                         if delta_T == 'norm':
-                            if static:
+                            if static == 'norm':
                                 return False
+                            else:
+                                # error 1 filter / airflow
+                                return True
                         elif delta_T == 'low':
                             # setting error
                             return True
                         elif delta_T == 'high':
-                            # error 1 - filter / airflow
+                            if static == 'norm':
+                                # setting error
+                                return True
+                            else:
+                                # error 1 - filter / airflow
+                                return True
+                    elif blo == 'low':
+                        if delta_T == 'norm':
+                            if static == 'norm'
+                                # blower capacitor error
+                                return True
+                            else:
+                                # error 1 airflow / filter
+                                return True
+                        else:
+                            if static == 'norm':
+                                #blower / airflow
+                                return True
+                            else:
+                                #error 1 filter / airflow
+                                return True
+                    elif blo == 'high':
+                        if delta_T == 'norm':
+                            if static == 'norm':
+                                # blower error still working
+                                return True
+                            else:
+                                # blower / airflow elevated risk 1
+                                return True
+                        else:
+                            if static == 'norm':
+                                # blower error elevated risk 1
+                                return True
+                            else:
+                                #blower / airflow elevated risk 2
+                                return True
                     else:
-                        # blower error
+                        # blower / board critical
                         return True
                 elif burners == True and not fla:
                     # flame senser error
@@ -162,8 +195,54 @@ class Equipment(object):
                 else:
                     # ignitor/gas/flame sensor error
                     return True
+            elif ind == 'low':
+                if fla == 'norm':
+                    if blo == 'norm':
+                        if delta_T == 'norm':
+                            if static == 'norm':
+                                # inducer / flue error
+                                return True
+                            else:
+                                # multiple errors elevated risk 1
+                                return True
+                        else:
+                            if static == 'norm':
+                                # mulitiple errors elevatied risk 1
+                                return True
+                            else:
+                                # inducer / filter / airflow eleveted risk 1
+                                return True
+                    else:
+                        #multiple errors elevated risk 2
+                        return True
+                else:
+                    # inducer / flue error critical
+                    return True
+            elif ind == 'high':
+                if fla == 'norm':
+                    if blo == 'norm':
+                        if delta_T == 'norm':
+                            if static == 'norm':
+                                # inducer / flue error
+                                return True
+                            else:
+                                # multiple errors elevated risk 1
+                                return True
+                        else:
+                            if static == 'norm':
+                                # mulitiple errors elevatied risk 1
+                                return True
+                            else:
+                                # inducer / filter / airflow eleveted risk 1
+                                return True
+                    else:
+                        #multiple errors elevated risk 2
+                        return True
+                else:
+                    # inducer / flue error critical
+                    return True
             else:
-                # inducer error
+                # inducer / board error critical
                 return True
         else:
             return False
@@ -186,14 +265,22 @@ class Equipment(object):
             cond_fan = compare.cond_fan_check(stage)
             compressor = compare.comp_check(stage)
             if odt > 65.0:
-                if cond_fan == True:
-                    if compressor == True:
+                if cond_fan == 'norm':
+                    if compressor == 'norm':
                         return False
-                    else:
+                    elif compressor == 'low':
                         #compressor issue
                         return True
-                else:
+                    elif compressor == 'high':
+                        # compressor issue
+                    else:
+                        # power / compressor issue
+                        return False
+                elif cond_fan == 'low':
                     #fan issue
+                    return True
+                elif cond_fan == 'high':
+                    # fan issue
                     return True
             else:
                 #too cold to test properly
@@ -218,28 +305,29 @@ class Equipment(object):
         capacity = compare.capacityCheck(self.cooling_tonage, self.cooling_cfm)
         static = compare.stacicPressureCheck()
 
-        if blower == True:
-            if deltaT == True:
-                if capacity == True:
+        if blower == 'norm':
+            if deltaT == 'norm':
+                if capacity == 'norm':
                     return False
                 else:
-                    if static == True
-                        if self.coolBot == True:
-                            if self.troubleshoot_condenser() == True:
+                    if static == 'norm'
+                        if self.coolBot:
+                            if self.troubleshoot_condenser():
                                 # low refrigerant
                                 return True
                             else:
-                                pass
+                                return False
                         else:
                             #low refrigerant / condenser issue
+                            return True
                     else:
-                        #airflow
+                        #error 1 airflow
                         return True
             else:
-                if static == True:
-                    if self.coolBot == True:
-                        if self.troubleshoot_condenser() == True:
-                            # airflow issues / clogged filter
+                if static == 'norm':
+                    if self.coolBot:
+                        if self.troubleshoot_condenser():
+                            # error 1 airflow issues / clogged filter
                             return True
                         else:
                             pass
@@ -272,38 +360,61 @@ class Equipment(object):
         deltaT = compare.tempRiseHp(stage)
         static = compare.stacicPressureCheck()
 
-        if blower == True:
-            if deltaT == True:
+        if blower == 'norm':
+            if deltaT == 'norm':
                 return False
             else:
-                if static == True
-                    if self.coolBot == True:
-                        if self.troubleshoot_condenser() == True:
+                if static == 'norm'
+                    if self.coolBot:
+                        if self.troubleshoot_condenser():
                             # low refrigerant/ defrost/ condenser issue
                             return True
                         else:
                             pass
                     else:
                         #low refrigerant / condenser issue
+                        return True
                 else:
                     #airflow
                     return True
-        else:
-            if static == True:
-                if self.coolBot == True:
-                    if self.troubleshoot_condenser() == True:
-                        # airflow issues / clogged filter
-                        return True
-                    else:
-                        pass
+        elif blower == 'low':
+            if delta_T == 'norm':
+                if static == 'norm':
+                    # capacitor issue
+                    return True
                 else:
-                    # condenser issue
+                    # error 1 airflow / filter
+                    return True
+            elif delta_T == 'high':
+                #error 1 airflow / filter
+                return True
+            else:
+                if static == 'norm':
+                    if self.coolbot:
+                        if self.troubleshoot_condenser():
+                            return True
+                        else:
+                            # capacitor issue
+                            return True
+                    else:
+                        # capacitor
+                        return True
+                else:
+                    # error 1 airflow
+                    return True
+        elif blower == 'high':
+            if delta_T == 'norm':
+                if static == 'norm':
+                    # bad blower motor still running
+                    return True
+                else:
+                    # bad motor + airflow
                     return True
             else:
-                #airflow issue
+                # blower / airflow
                 return True
         else:
-            # blower issue
+            # blower / board
             return True
 
     def troubleshoot_geo(self):
@@ -340,13 +451,13 @@ class Equipment(object):
         pumps = compare.pump_check()
 
         if stage:
-            if pumps:
-                if comp:
-                    if blower:
-                        if static:
-                            if deltaT:
+            if pumps == 'norm':
+                if comp == 'norm':
+                    if blower == 'norm':
+                        if static == 'norm':
+                            if deltaT == 'norm':
                                 if not Tstat.reversing():
-                                    if capacity:
+                                    if capacity == 'norm':
                                         return False
                                     else:
                                         # low water/ refrigerant
@@ -377,27 +488,35 @@ class GasFurnace(Equipment):
         self.heatBot = heatBot
 
     def furnace_stage(self, stage):
-        if compare.altInducerAmps(stage) == True:
-            if compare.flameCheck() == True:
-                if compare.altBlowerAmps('w', stage) == True:
-                    if compare.tempRiseGas(stage) == True:
+        if compare.altInducerAmps(stage) == 'norm':
+            if compare.flameCheck():
+                if compare.altBlowerAmps('w', stage) == 'norm':
+                    if compare.tempRiseGas(stage) == 'norm':
                         return True
                     else:
                         # troubleshoot mode
-                        Equipment.troubleshoot_furnace(True)
-                        return False
+                        if Equipment.troubleshoot_furnace(True):
+                            return False
+                        else:
+                            return True
                 else:
                     #troubleshoot mode
-                    Equipment.troubleshoot_furnace(True)
-                    return False
+                    if Equipment.troubleshoot_furnace(True):
+                        return False
+                    else:
+                        return True
             else:
                 #troubleshoot mode
-                Equipment.troubleshoot_furnace(True)
-                return False
+                if Equipment.troubleshoot_furnace(True):
+                    return False
+                else:
+                    return True
         else:
             #troubleshoot mode
-            Equipment.troubleshoot_furnace(True)
-            return False
+            if Equipment.troubleshoot_furnace(True):
+                return False
+            else:
+                return True
 
     def furnace_timed(self, t):
         if t < 600:
@@ -405,31 +524,37 @@ class GasFurnace(Equipment):
         else:
             stage = 'high'
 
-        if compare.altInducerAmps(stage) == True:
-            if compare.flameCheck() == True:
-                if compare.altBlowerAmps('w', stage) == True:
-                    if compare.tempRiseGas(stage) == True:
+        if compare.altInducerAmps(stage) == 'norm':
+            if compare.flameCheck():
+                if compare.altBlowerAmps('w', stage) == 'norm':
+                    if compare.tempRiseGas(stage) == 'norm':
                         return True
                     else:
                         # troubleshoot mode
-                        Equipment.troubleshoot_furnace(True, t)
-                        return False
+                        if Equipment.troubleshoot_furnace(True, t):
+                            return False
                 else:
                     #troubleshoot mode
-                    Equipment.troubleshoot_furnace(True, t)
-                    return False
+                    if Equipment.troubleshoot_furnace(True, t):
+                        return False
+                    else:
+                        return True
             else:
                 #troubleshoot mode
-                Equipment.troubleshoot_furnace(True, t)
-                return False
+                if Equipment.troubleshoot_furnace(True, t):
+                    return False
+                else:
+                    return True
         else:
             #troubleshoot mode
-            Equipment.troubleshoot_furnace(True, t)
-            return False
+            if Equipment.troubleshoot_furnace(True, t):
+                return False
+            else:
+                return True
 
     def furnace_start(self, stage):
         t = 0
-        if compare.altInducerAmps('high'):
+        if compare.altInducerAmps('high') == 'norm':
             while t < 30:
                 t = t + 1
                 time.sleep(1)
@@ -441,24 +566,32 @@ class GasFurnace(Equipment):
                     while t < 95:
                         t = t + 1
                         time.sleep(1)
-                    if compare.altBlowerAmps('w', stage):
+                    if compare.altBlowerAmps('w', stage) == 'norm':
                         return True
                     else:
                         # troubleshoot mode
-                        Equipment.troubleshoot_furnace(True)
-                        return False
+                        if Equipment.troubleshoot_furnace(True):
+                            return False
+                        else:
+                            return True
                 else:
                     # troubleshoot
-                    Equipment.troubleshoot_furnace(True)
-                    return False
+                    if Equipment.troubleshoot_furnace(True):
+                        return False
+                    else:
+                        return True
             else:
                 # troubleshoot
-                Equipment.troubleshoot_furnace(False)
-                return False
+                if Equipment.troubleshoot_furnace(False):
+                    return False
+                else:
+                    return True
         else:
             #troubleshoot
-            Equipment.troubleshoot_furnace(False)
-            return False
+            if Equipment.troubleshoot_furnace(False):
+                return False
+            else:
+                return True
 
 class Condenser(Equipment):
 
@@ -475,14 +608,14 @@ class Condenser(Equipment):
         if self.coolBot == True:
             time.sleep(1)
             t = t + 1
-            if compare.condenserFan(stage) == True:
+            if compare.condenserFan(stage) == 'norm':
                 time.sleep(1)
                 t = t + 1
-                if compare.compresser(stage) == True:
-                    if compare.altBlowerAmps('y', stage):
+                if compare.compresser(stage) == 'norm':
+                    if compare.altBlowerAmps('y', stage) == 'norm':
                         if p > 4:
-                            if compare.tempDrop(stage) == True:
-                                if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == True:
+                            if compare.tempDrop(stage) == 'norm':
+                                if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == 'norm':
                                     return True
                                 else:
                                     if Equipment.troubleshoot_cooling_indoor() == True:
@@ -512,25 +645,25 @@ class Condenser(Equipment):
                 else:
                     return True
         else:
-            if compare.altBlowerAmps('y', stage) == True:
+            if compare.altBlowerAmps('y', stage) == 'norm':
                 if p > 4:
-                    if compare.tempDrop(stage) == True:
-                        if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == True:
+                    if compare.tempDrop(stage) == 'norm':
+                        if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == 'norm':
                             return True
                         else:
-                            if Equipment.troubleshoot_cooling_indoor() == True:
+                            if Equipment.troubleshoot_cooling_indoor():
                                 return False
                             else:
                                 return True
                     else:
-                        if Equipment.troubleshoot_cooling_indoor() == True:
+                        if Equipment.troubleshoot_cooling_indoor():
                             return False
                         else:
                             return True
                 else:
                     return True
             else:
-                if Equipment.troubleshoot_cooling_indoor() == True:
+                if Equipment.troubleshoot_cooling_indoor():
                     return False
                 else:
                     return True
@@ -540,50 +673,50 @@ class Condenser(Equipment):
         if self.coolBot == True:
             time.sleep(1)
             t = t + 1
-            if compare.condenserFan(stage) == True:
+            if compare.condenserFan(stage) == 'norm':
                 time.sleep(1)
                 t = t + 1
-                if compare.compresser(stage) == True:
-                    if compare.altBlowerAmps('y', stage):
+                if compare.compresser(stage) == 'norm':
+                    if compare.altBlowerAmps('y', stage) == 'norm':
                         if p > 4:
-                            if compare.tempRiseHp(stage) == True:
+                            if compare.tempRiseHp(stage) == 'norm':
                                 return True
                             else:
-                                if Equipment.troubleshoot_hp_indoor() == True:
+                                if Equipment.troubleshoot_hp_indoor():
                                     return False
                                 else:
                                     return True
                         else:
                             return True
                     else:
-                        if Equipment.troubleshoot_hp_indoor() == True:
+                        if Equipment.troubleshoot_hp_indoor():
                             return False
                         else:
                             return True
                 else:
-                    if Equipment.troubleshoot_hp_indoor() == True:
+                    if Equipment.troubleshoot_hp_indoor():
                         return False
                     else:
                         return True
             else:
-                if Equipment.troubleshoot_hp_indoor() == True:
+                if Equipment.troubleshoot_hp_indoor():
                     return False
                 else:
                     return True
         else:
-            if compare.altBlowerAmps('y', stage) == True:
+            if compare.altBlowerAmps('y', stage) == 'norm':
                 if p > 4:
-                    if compare.tempRiseHp(stage) == True:
+                    if compare.tempRiseHp(stage) == 'norm':
                         return True
                     else:
-                        if Equipment.troubleshoot_hp_indoor() == True:
+                        if Equipment.troubleshoot_hp_indoor():
                             return False
                         else:
                             return True
                 else:
                     return True
             else:
-                if Equipment.troubleshoot_hp_indoor() == True:
+                if Equipment.troubleshoot_hp_indoor():
                     return False
                 else:
                     return True
@@ -593,11 +726,11 @@ class Condenser(Equipment):
         while t == 0:
             time.sleep(1)
             t = t + 1
-        if compare.compressor(stage):
-            if compare.altBlowerAmps('y', stage):
+        if compare.compressor(stage) == 'norm':
+            if compare.altBlowerAmps('y', stage) == 'norm':
                 if p > 4:
-                    if compare.tempDrop(stage):
-                        if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm):
+                    if compare.tempDrop(stage) == 'norm':
+                        if compare.capacityCheck(self.cooling_tonage, self.cooling_cfm) == 'norm':
                             return True
                         else:
                             if equipment.troubleshoot_geo():
