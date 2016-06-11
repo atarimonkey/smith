@@ -23,25 +23,29 @@
 #
 
 import senscom
+import Json
 
-blowerHeatLow = ''
-blowerHeatHi = ''
-blowerCoolLow = ''
-blowerCoolHi = ''
-blowerFan = ''
+with open('settings.json') as data_file:
+    data = json.load(data_file)
 
-inducerLow = ''
-inducerHi = ''
+blowerHeatLow = data["baseline"]['blower heat low']
+blowerHeatHi = data["baseline"]['blower heat high']
+blowerCoolLow = data["baseline"]['blower cool low']
+blowerCoolHi = data["baseline"]['blower cool high']
+blowerFan = data["baseline"]['blower fan']
 
-condFanLow = ''
-condFanHi = ''
+inducerLow = data["baseline"]["inducer low"]
+inducerHi = data["baseline"]['inducer high']
 
-compLow = ''
-compHi = ''
+condFanLow = data["baseline"]['cond fan low']
+condFanHi = data["baseline"]['cond fan high']
 
-pressure = ''
+compLow = data["baseline"]['comp low']
+compHi = data["baseline"]['comp high']
 
-pumpAmps = ''
+pressure = data["baseline"]['pressure']
+
+pumpAmps = data["baseline"]['pump']
 
 # check the blower amps
 def blowerAmps(speed):

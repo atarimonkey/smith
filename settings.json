@@ -1,0 +1,37 @@
+{
+    "contact": {
+        'name': ''
+        'Email': ''
+        'contractor': ''
+        'con phone': ''
+        'con Email': ''
+        }
+    "equipment": {
+        'heat type': ''
+        'heat stages': ''
+        'timed stages': ''
+        'heatpump': ''
+        'cooling stages': ''
+        'cooling tonage': ''
+        'cooling cfm': ''
+        }
+    "boards": {
+        'heatbot': ''
+        'coolbot': ''
+        }
+    "baseline": {
+        'blower heat low': ''
+        'blower heat high': ''
+        'blower cool low': ''
+        'blower cool high': ''
+        'blower fan': ''
+        'inducer low': ''
+        'inducer high': ''
+        'cond fan low': ''
+        'cond fan high': ''
+        'comp low': ''
+        'comp high': ''
+        'pressure': ''
+        'pumps': ''
+        }
+}
