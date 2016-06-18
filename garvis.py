@@ -24,6 +24,7 @@
 import time
 import compare
 import Tstat
+import json
 
 class Equipment(object):
 
@@ -486,6 +487,32 @@ class GasFurnace(Equipment):
         self.heat_stages = heat_stages
         self.timed_stages = timed_stages
         self.heatBot = heatBot
+
+    def furnaceCall(self, stage):
+        if self.heat_stages == '1':
+            self.furnace_start()
+            time.sleep(3)
+            while Tstat.heat_read() == 'w1' or Tstat.heat_read() == 'w2':
+                self.furnace_stage(2)
+                time.sleep(1)
+        elif self.heat_stages == '2' and self.timed_stages == 0:
+            self.furnace_start()
+            time.sleep(3)
+            while Tstat.heat_read() == 'w1' or Tstat.heat_read() == 'w2':
+                if Tstat.heat_read() == 'w2':
+                    s = 2
+                else:
+                    s = 1
+                self.furnace_stage(s)
+                time.sleep(1)
+        elif self.heat_stages == '2' and not self.timed_stages == 0:
+            self.furnace_start()
+            time.sleep(3)
+            t = 98
+            while Tstat.heat_read() == 'w1' or Tstat.heat_read() == 'w2':
+                self.furnace_timed(t)
+                time.sleep(1)
+                t = t + 1
 
     def furnace_stage(self, stage):
         if compare.altInducerAmps(stage) == 'norm':
