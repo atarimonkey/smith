@@ -52,7 +52,7 @@ def main():
     if stat = 'w1':
         heat.furnaceCall()
     elif stat = 'w2':
-        heat.furnaceCall()
+        heat++.furnaceCall()
     elif stat = 'y1':
         pass
     elif stat = 'y2':
@@ -60,3 +60,8 @@ def main():
     elif stat = 'g':
         pass
     time.sleep(1)
+
+if __name__ == __main__:
+    start()
+    while 1:
+        main()
