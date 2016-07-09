@@ -40,10 +40,15 @@ inducerHi = data["baseline"]['inducer high']
 condFanLow = data["baseline"]['cond fan low']
 condFanHi = data["baseline"]['cond fan high']
 
+
 compLow = data["baseline"]['comp low']
 compHi = data["baseline"]['comp high']
 
-pressure = data["baseline"]['pressure']
+pressure_w1 = data["baseline"]['pressure w1']
+pressure_w2 = data["baseline"]['pressure w2']
+pressure_y1 = data["baseline"]['pressure y1']
+pressure_y2 = data["baseline"]['pressure y2']
+pressure_g = data["baseline"]['pressure g']
 
 pumpAmps = data["baseline"]['pump']
 
@@ -114,12 +119,16 @@ def altBlowerAmps(call, speed):
     #log data
 
     if (s * .9) <= senscom.blower() <= (s * 1.1):
+        print 'normal blower amps'
         return 'norm'
     elif (s * .1) < senscom.blower() < (s * .9):
+        print 'low blower amps'
         return 'low'
     elif senscom.blower() > (s * 1.1):
+        print 'high blower amps'
         return 'high'
     else:
+        print '0 blower amps'
         return False
 
 # check the inducer amps
@@ -151,20 +160,26 @@ def altInducerAmps(speed):
     # log data
 
     if (s * .9) <= senscom.inducer() <= (s * 1.1):
+        print 'normal inducer amps'
         return 'norm'
     elif (s * .1) < senscom.inducer() < (s * .9):
+        print 'low inducer amps'
         return 'low'
     elif senscom.inducer() > (s * 1.1):
+        print 'high inducer amps'
         return 'high'
     else:
+        print '0 inducer amps'
         return False
 
 # check the flame sensor
 def flameCheck():
     # log data
     if senscom.flame() == 'True':
+        print 'flame'
         return True
     else:
+        print 'no flame'
         return False
 
 # check the temp rise
@@ -172,48 +187,70 @@ def tempRiseGas(stage):
     # log data
     if stage == 'low':
         if 20 <= senscom.temp_rise() <= 35:
+            print 'normal temp rise'
             return 'norm'
         elif senscom.temp_rise() < 5:
+            print 'no temp rise'
             return False
         elif 5 < senscom.temp_rise() < 20:
+            print 'low temp rise'
             return 'low'
         elif senscom.temp_rise() > 35:
+            print 'high temp rise'
             return 'high'
     else:
         if 30 <= senscom.temp_rise() <= 70:
+            print 'normal temp rise'
             return 'norm'
-        elif senscom < 5:
+        elif senscom.temp_rise() < 5:
+            print 'no temp rise'
             return False
         elif 5 < senscom.temp_rise() < 30:
+            print 'low temp rise'
             return 'low'
+        elif senscom.temp_rise() > 70:
+            print 'high temp rise'
+            return 'high'
 
 def tempRiseHp(stage):
     if stage == 'low':
         if 14 <= senscom.temp_rise() <= 20:
+            print 'normal temp rise'
             return 'norm'
         elif senscom.temp_rise() <= 5:
+            print 'no temp rise'
             return False
         elif 5 < senscom.temp_rise() < 14:
+            print 'low temp rise'
             return 'low'
         elif senscom.temp_rise() > 20:
+            print 'high temp rise'
             return 'high'
     elif stage == 'high':
         if 18 <= senscom.temp_rise() <= 30:
+            print 'normal temp rise'
             return 'norm'
         elif 5 < senscom.temp_rise() < 18:
+            print 'low temp rise'
             return 'low'
         elif senscom.temp_rise() > 30:
+            print 'high temp rise'
             return 'high'
         else:
+            print 'no temp rise'
             return False
     elif stage == 'aux':
         if 20 <= senscom.temp_rise() <= 40:
+            print 'normal temp rise'
             return 'norm'
         elif 5 < senscom.temp_rise() < 20:
+            print 'low temp rise'
             return 'low'
         elif senscom.temp_rise() > 40:
+            print 'high temp rise'
             return 'high'
         else:
+            print 'no temp rise'
             return False
 
 
@@ -222,21 +259,29 @@ def tempDrop(stage):
     #log data
     if stage == 'low':
         if 14 <= senscom.temp_drop() <= 20:
+            print 'mormal temp drop'
             return 'norm'
         elif 5 < senscom.temp_drop() < 14:
+            print 'low temp drop'
             return 'low'
         elif senscom.temp_drop() > 20:
+            print 'high temp drop'
             return 'high'
         else:
+            print 'no temp drop'
             return False
     else:
         if 16 <= senscom.temp_drop() <= 26:
+            print 'normal temp drop'
             return 'norm'
         elif 5 < senscom.temp_drop() < 16:
+            print 'low temp drop'
             return 'low'
         elif senscom.temp_drop() > 26:
+            print 'high temp drop'
             return 'high'
         else:
+            print 'no temp drop'
             return False
 
 # check capacity
@@ -262,15 +307,57 @@ def capacityCheck(tonage, cfm):
     #log data
 
     if (btu * .9) <= senscom.capacity(cfm) <= (btu * 1.1):
+        print 'normal capacity'
         return 'norm'
     elif (btu * .9) > senscom.capacity(cfm):
+        print 'low capacity'
         return 'low'
     else:
+        print 'high capacity'
         return False
 
 def staticPressureCheck():
-    global pressure
+    global pressure_w1
+    global pressure_w2
+    global pressure_y1
+    global pressure_y2
+    global pressure_g
+
     p = senscom.supplyPress() + senscom.returnPress
+    print p
+
+    if call == 'w':
+        if speed == 'low':
+            if pressure_w1 == '':
+                pressure_w1 = p
+                pressure = pressure_w1
+            else:
+                pressure = pressure_w1
+        elif speed == 'high':
+            if pressure_w2 == '':
+                pressure_w2 = p
+                pressure = pressure_w2
+            else:
+                pressure = pressure_w2
+    elif call == 'y':
+        if speed == 'low':
+            if pressure_y1 == '':
+                pressure_y1 = p
+                pressure = pressure_y1
+            else:
+                pressure = pressure_y1
+        else:
+            if pressure_y2 == '':
+                pressure_y2 = p
+                pressure = pressure_y2
+            else:
+                pressure = pressure_y2
+    elif call == 'g':
+        if pressure_g == '':
+            pressure_g = p
+            pressure = pressure_g
+        else:
+            pressure = pressure_g
 
     if pressure == '':
         pressure = p
@@ -278,10 +365,13 @@ def staticPressureCheck():
     # log pressure
 
     if (pressure * .9) < p < (pressure * 1.1):
+        print 'normal static'
         return 'norm'
     elif p < (pressure * .9):
+        print 'low static'
         return 'low'
     elif p > (pressure * 1.1):
+        print 'high static'
         return 'high'
     else:
         return False
@@ -305,12 +395,16 @@ def cond_fan_check(stage):
     #log data
 
     if (f * .9) < senscom.cond_fan() < (f * 1.1):
+        print 'normal cond fan'
         return 'norm'
     elif (f * .1) < senscom.cond_fan() < (f * .9):
+        print 'low cond fan'
         return 'low'
     elif senscom.cond_fan() > (f * 1.1):
+        print 'high cond fan'
         return 'high'
     else:
+        print 'no cond fan'
         return False
 
 def comp_check(stage):
@@ -332,12 +426,16 @@ def comp_check(stage):
     #log data
 
     if (c * .9) <= senscom.compressor() <= (c * 1.1):
+        print 'normal comp'
         return 'norm'
     elif (c * .1) < senscom.compressor() < (c * .9):
+        print 'low comp'
         return 'low'
     elif senscom.compressor() > (c * 1.1):
+        print 'high comp'
         return 'high'
     else:
+        print 'no comp'
         return False
 
 def pump_check():
@@ -351,12 +449,16 @@ def pump_check():
     #log data
 
     if (p * .9) <= senscom.pump() <= (p * 1.1):
+        print 'normal pump'
         return 'norm'
     elif (p * .1) < senscom.pump() < (p * .9):
+        print 'low pump'
         return 'low'
     elif senscom.pump() > (p * 1.1):
+        print 'high pump'
         return 'high'
     else:
+        print 'no pump'
         return False
 
 def main():
