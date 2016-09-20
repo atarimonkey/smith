@@ -31,7 +31,7 @@ def heat_read():
     elif stat_w == True and stat_w2 == True:
         print "w2"
         return "w2"
-    
+
 def cool_read():
     stat_y = gpio.digitalRead(cool)
     stat_y2 = gpio.digitalRead(cool2)
@@ -62,6 +62,6 @@ def tstatRead():
     tstat.append(reversingValve())
     return tstat
 
-if __name__ == __main__:
+if __name__ == '__main__':
     print tstatRead()
-    
+
