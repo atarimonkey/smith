@@ -21,6 +21,10 @@ rbus =  # bus for the return sensor
 sbme = bme280.BME280(sbus, si2cadd)
 rbme = bme280.BME280(rbus, ri2cadd)
 
+def hbotPing():
+    x = comm('i')
+    print x
+    return x
 
 def inducer():
         x = float(comm('f'))
@@ -108,6 +112,9 @@ def supplyPress():
 def odt():
     pass
 
+def cbotPing():
+    pass
+
 def cond_fan():
     pass
 
@@ -125,7 +132,6 @@ def comm(z):
     myPort.close()
     return x
 
-
 if __name__ == __main__:
     print supplyTemp()
     print returnTemp()
@@ -134,4 +140,3 @@ if __name__ == __main__:
     print blower()
     print inducer()
     print flame()
-
