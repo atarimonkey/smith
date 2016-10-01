@@ -22,7 +22,7 @@
 #  
 #  
 
-# import json
+import json
 import logging
 import logging.handlers
 import time
@@ -35,6 +35,7 @@ import phant
 class Log:
     """This class is to facilitate the logging of measurements or errors in each of your modules.
     It can log to files and/or to the phant web service"""
+
     def __init__(self, logname):
         """This defines the name of the logger and the file that will be logged to."""
         assert type(logname) is str, "Invalid Log Name"
@@ -50,25 +51,35 @@ class Log:
         self.log_file.setFormatter(self.file_formatter)
         self.web_logger = phant.Phant('2JrDOrmOnxt3KK1dGW1b', 'bloweramps', 'call', 'capacity', 'deltae', 'deltat',
                                       'error', 'induceramps', 'runtime', private_key='GP8ME8GEoyCvNN2x0z27')
+        with open('error_code.json', 'r') as f:
+            self.error_codes = json.load(f)
 
-    def clean_cache(self, cache):
+    def clean_cache(self):
         """Removes old cache entries"""
         old_data = []
-        assert type(cache) is dict, "Invaled cache data"
-        for log_message in cache:
-            if cache[log_message] + 86400 < time.time():
+        assert type(self.file_log_cache) is dict, "Invaled cache data"
+        for log_message in self.file_log_cache:
+            if self.file_log_cache[log_message] + 86400 < time.time():
                 old_data.append(log_message)
 
         for data in old_data:
-            cache.pop(data)
+            self.file_log_cache.pop(data)
 
-    def log_to_file(self, message):
+    def log_to_file(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
         """Log a message to a log file using the name defined at creation, logname.log."""
+        error_message = -1
+        message = "Runtime={7}, Delta T={4}, Inducer Amps={6}, Error={5:02}, Delta E={3}, Call={1}, " \
+                  "Blower Amps={0}, Capacity={2}, Message={8}".format(blower_amps, call, capacity, delta_e, delta_t,
+                                                         error, inducer_amps, run_time, self.error_codes[str(error)])
         assert type(message) is str, "Invalid log data"
-        self.clean_cache(self.file_log_cache)
+
+        start_index = message.find("Error=")
+        if start_index > -1:
+            error_message = int(message[start_index + 6: start_index + 8])
+        self.clean_cache()
         if message not in self.file_log_cache:
-            self.file_log_cache[message] = time.time()
-            print self.file_log_cache.keys()
+            if -1 < error_message < 7:
+                self.file_log_cache[message] = time.time()
             self.logger.info(message)
 
     def log_to_web(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
@@ -78,10 +89,7 @@ class Log:
     def log_to_all(self, blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time):
         """Log data to phant and the defined log file"""
         self.log_to_web(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
-        self.log_to_file("Runtime={7}, Delta T={4}, Inducer Amps={6}, Error={5}, Delta E={3}, Call={1}, " \
-                         "Blower Amps={0}, Capacity={2}".format(blower_amps, call, capacity, delta_e, delta_t,
-                                                                    error, inducer_amps, run_time))
-
+        self.log_to_file(blower_amps, call, capacity, delta_e, delta_t, error, inducer_amps, run_time)
 
 # def clear_log():
 #     os.remove('log')
@@ -126,4 +134,3 @@ class Log:
 #
 # if __name__ == '__main__':
 # 	main()
-
