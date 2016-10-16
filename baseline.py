@@ -126,14 +126,42 @@ def blo(c, x):
 # main bot
     # return temp
     # supply temp
-    # return press
-    # supply press
+def deltaP(c):
+    call = c
+    p = senscom.supplyPress() - senscom.returnPress
+    if call == 'g':
+        baseline.update({'pressure g': p})
+    elif call == 'w1':
+        baseline.update({'pressure w1': p})
+    elif call == 'w2':
+        baseline.update({'pressure w2': p})
+    elif call == 'y1':
+        baseline.update({'pressure y1': p})
+    elif call == 'y2':
+        baseline.update({'pressure y2': p})
+    else:
+        pass
     # return hum
     # supply hum
 # cool bot
     # fan
+def condFan(s):
+    stage = s
+    amps = senscom.cond_fan()
+    if stage == 'low':
+        baseline.update({'cond fan low': amps})
+    else:
+        baseline.update({'cond fan high': amps})
     # comp
+def comp(s):
+    stage = s
+    amps = senscom.compressor()
+    if stage == 'low':
+        baseline.update({'comp low': amps})
+    else:
+        baseline.update({'comp high': amps})
     # s line pressure
+
     # l line pressure
 
 # test furnace operation and varify
